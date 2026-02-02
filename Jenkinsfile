@@ -62,6 +62,26 @@ pipeline {
                 }
             }
         }
+
+        stage('Approval - Terraform Destroy') {
+            steps {
+                input(
+                    message: '⚠️ DANGER ZONE ⚠️\nThis will DESTROY ALL AWS resources created by Terraform.\nDo you really want to continue?',
+                    ok: 'Yes, Destroy Everything'
+                )
+            }
+        }
+
+        stage('Terraform Destroy') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]]) {
+                    bat 'terraform destroy -auto-approve'
+                }
+            }
+        }    
     }
 
     post {
