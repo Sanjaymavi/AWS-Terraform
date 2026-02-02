@@ -15,19 +15,34 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                bat 'terraform init -input=false'
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]]) {
+                    bat 'terraform init -input=false'
+                }
             }
         }
 
         stage('Terraform Validate') {
             steps {
-                bat 'terraform validate'
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]]) {
+                    bat 'terraform validate'
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                bat 'terraform plan -out=tfplan'
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]]) {
+                    bat 'terraform plan -out=tfplan'
+                }
             }
         }
 
@@ -39,17 +54,22 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                bat 'terraform apply -auto-approve tfplan'
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]]) {
+                    bat 'terraform apply -auto-approve tfplan'
+                }
             }
         }
     }
 
     post {
-        success {
-            echo 'Terraform deployment successful!'
-        }
         failure {
             echo 'Terraform deployment failed!'
+        }
+        success {
+            echo 'Terraform deployment successful!'
         }
     }
 }
